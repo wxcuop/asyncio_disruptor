@@ -387,25 +387,24 @@ class ConsumerThread:
 
 class Disruptor:
     """
-    A basic multi-threaded RingBuffer; a Disruptor-Lite implementation using a thread-per-consumer model.
-
+    A basic asyncio-based RingBuffer; a Disruptor-Lite implementation using an asyncio coroutine-per-consumer model.
+    
     This is an efficient alternative to queues in cases where multiple workloads need to consume the same type of data.
-
+    
     See the below links for an explanation of how this works:
         * http://mechanitis.blogspot.com/2011/07/dissecting-disruptor-writing-to-ring.html explanation of structure
         * https://lmax-exchange.github.io/disruptor/ original Disruptor
-        * https://medium.com/@teivah/understanding-the-lmax-disruptor-caaaa2721496 - mechanical sympathy (largely not applicable in python)
-
+        * https://medium.com/@teivah/understanding-the-lmax-disruptor-caaaa2721496 - mechanical sympathy (largely not applicable in Python)
+    
     Allows for many producers to efficiently concurrently produce elements to be concurrently consumed by many consumers.
-    Uses a shared ring buffer between consumers and producers with a minimum amount of blocking.  An element in the ring
+    Uses a shared ring buffer between consumers and producers with a minimum amount of blocking. An element in the ring
     can only be written to after all consumers have consumed it, effectively handling backpressure from any number of 
     parallel consumers.
-
-    Producers (callers of the produce method) are only blocked when the ring is full.
-
-    Unlike a C/C++/C#/Java disruptor, this implementation uses Python threads, so it offers little to no mechanical sympathy
-    outside of supporting lock-free parallel consumptions of big sections of the ring buffer which may or may not fall into
-    a single CPU cache line.  Even so, this is a great tool for processing multiple events of the same type concurrently.
+    
+    Producers (callers of the produce method) are only blocked asynchronously when the ring is full.
+    
+    Unlike a C/C++/C#/Java disruptor, this implementation uses Python's asyncio, avoiding the overhead of threads and 
+    supporting efficient parallel consumption of data.
     """
 
     def __init__(self, size=1024, name='Disruptor', consumer_error_handler=None, time_fn=time.time):
